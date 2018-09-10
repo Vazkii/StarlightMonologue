@@ -56,7 +56,7 @@ public class MainMenuScene : SceneController
                 animatingText = false;
         }
 
-        if(acceptInput && Input.GetKeyDown("return"))
+        if(acceptInput && Input.GetKeyDown(KeyCode.Return))
             AnimateDown();
     }
 
