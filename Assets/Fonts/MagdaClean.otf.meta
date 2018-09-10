@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 1d650760a6e776f4594fcd1894e7b8aa
+timeCreated: 1536106461
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: MagdaClean
+  fontNames:
+  - MagdaClean
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
