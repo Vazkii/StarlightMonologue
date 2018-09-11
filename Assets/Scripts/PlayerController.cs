@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
@@ -57,7 +54,7 @@ public class PlayerController : MonoBehaviour {
     private void OnCollisionEnter2D(Collision2D collision)
     {
         Transform target = collision.collider.transform;
-        if(target.tag == "KillThing") {
+        if(target.tag == "KillThing" && allowInput) {
             allowInput = false;
             audioSource.PlayOneShot(damageSound);
             scene.OnPlayerDeath();
