@@ -17,6 +17,7 @@ public class BossController : MonoBehaviour
     public GameplayScene scene;
 
     [Header("Phase Data")]
+    public int startingPhase = 0;
     public PhaseInfo[] phases;
 
     protected int phase = 0;
@@ -27,6 +28,11 @@ public class BossController : MonoBehaviour
     protected float totalTime;
     protected float phaseTime;
     protected AttackTime[] times;
+
+    public virtual void Start()
+    {
+        SetPhase(startingPhase);
+    }
 
     void Update()
     {
@@ -72,7 +78,10 @@ public class BossController : MonoBehaviour
         if(time > 0) {
             waiting = true;
             waitTime = time;
-        }
+        } else
+            foreach(AttackTime atime in times)
+                atime.Step(-time);
+            
     }
 
     protected void SetPhase(int phase)
@@ -92,12 +101,13 @@ public class BossController : MonoBehaviour
             return;
 
         PhaseInfo info = phases[phase];
-        Wait(info.wait);
-        Expect(info.expected);
 
         times = new AttackTime[info.attacks.Length];
         for(int i = 0; i < times.Length; i++)
             times[i] = new AttackTime();
+
+        Wait(info.wait);
+        Expect(info.expected);
     }
 
     public void SpawnBullet(float angle, float speed, Color color, float scale = 1F)

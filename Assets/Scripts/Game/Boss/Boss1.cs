@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class TestBoss : BossController
+public class Boss1 : BossController
 {
     [Header("Descend")]
     public float descendSpeed = -0.5F;
@@ -12,8 +12,10 @@ public class TestBoss : BossController
     private float startPos;
     private bool didCutin;
 
-    void Start()
+    public override void Start()
     {
+        base.Start();
+
         didCutin = false;
         startPos = transform.localPosition.y;
     }
