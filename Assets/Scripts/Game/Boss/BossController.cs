@@ -14,6 +14,9 @@ public class BossController : MonoBehaviour
     public GameObject bulletPrefab;
     public Transform playerEntity;
     public Text debugText;
+    public GameplayScene scene;
+
+    [Header("Phase Data")]
     public PhaseInfo[] phases;
 
     protected int phase = 0;
@@ -21,16 +24,20 @@ public class BossController : MonoBehaviour
     protected float waitTime = -1;
     protected float expectedPhaseTime = -1;
 
+    protected float totalTime;
     protected float phaseTime;
     protected AttackTime[] times;
 
     void Update()
     {
+        float delta = Time.deltaTime;
+
         if(!waiting && times != null)
             foreach(AttackTime time in times)
-                time.Step(Time.deltaTime);
+                time.Step(delta);
 
-        phaseTime += Time.deltaTime;
+        phaseTime += delta;
+        totalTime += delta;
 
         if(expectedPhaseTime > -1 && phaseTime >= expectedPhaseTime)
             SetPhase(phase + 1);
@@ -39,7 +46,7 @@ public class BossController : MonoBehaviour
             waiting = false;
 
         if(debugText != null)
-            debugText.text = "Phase " + phase + " Time: " + phaseTime;
+            debugText.text = string.Format("P{0}: {1:N2} (Total: {2:N2})", phase, phaseTime, totalTime);
 
         PhaseUpdate();    
     }

@@ -10,9 +10,11 @@ public class TestBoss : BossController
     // ======================================================================================================
 
     private float startPos;
+    private bool didCutin;
 
     void Start()
     {
+        didCutin = false;
         startPos = transform.localPosition.y;
     }
 
@@ -28,6 +30,11 @@ public class TestBoss : BossController
                 }
 
                 transform.localPosition = new Vector3(0, y, 0);
+        }
+
+        if(!didCutin && totalTime > 8) {
+            scene.AnimateCutin("You are Fragile");
+            didCutin = true;
         }
     }
 
