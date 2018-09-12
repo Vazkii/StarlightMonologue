@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour {
     public bool allowInput { get; set; }
     private AudioSource audioSource;
 
+    private Vector2 TOP_RIGHT = new Vector2(8.47F, 3.97F);
+    private Vector2 BOTTOM_LEFT = new Vector2(-8.26F, -3.97F);
+
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -42,6 +45,7 @@ public class PlayerController : MonoBehaviour {
         motion.Scale(new Vector3(speed, speed, 0));
 
         transform.position += motion;
+        ClampPosition();
 
         float a = hitbox.color.a;
         if(shift)
@@ -59,5 +63,12 @@ public class PlayerController : MonoBehaviour {
             audioSource.PlayOneShot(damageSound);
             scene.OnPlayerDeath();
         }
+    }
+
+    private void ClampPosition()
+    {
+        float x = Mathf.Max(BOTTOM_LEFT.x, Mathf.Min(TOP_RIGHT.x, transform.localPosition.x));
+        float y = Mathf.Max(BOTTOM_LEFT.y, Mathf.Min(TOP_RIGHT.y, transform.localPosition.y));
+        transform.localPosition = new Vector3(x, y, transform.localPosition.z);
     }
 }

@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
-public abstract class EnemyController : MonoBehaviour
+public class BossController : MonoBehaviour
 {
+
+    public const float TAU = Mathf.PI * 2;
 
     public delegate void DeductCallback(int i);
 
@@ -12,6 +14,7 @@ public abstract class EnemyController : MonoBehaviour
     public GameObject bulletPrefab;
     public Transform playerEntity;
     public Text debugText;
+    public PhaseInfo[] phases;
 
     protected int phase = 0;
     protected bool waiting = false;
@@ -19,36 +22,37 @@ public abstract class EnemyController : MonoBehaviour
     protected float expectedPhaseTime = -1;
 
     protected float phaseTime;
-    protected float elapsedTime;
-    protected int timesCalled;
+    protected AttackTime[] times;
 
     void Update()
     {
-        if(!waiting)
-            elapsedTime += Time.deltaTime;
+        if(!waiting && times != null)
+            foreach(AttackTime time in times)
+                time.Step(Time.deltaTime);
 
         phaseTime += Time.deltaTime;
 
         if(expectedPhaseTime > -1 && phaseTime >= expectedPhaseTime)
             SetPhase(phase + 1);
+
         if(waitTime > -1 && phaseTime >= waitTime)
             waiting = false;
 
         if(debugText != null)
-            debugText.text = "Phase Time: " + phaseTime;
+            debugText.text = "Phase " + phase + " Time: " + phaseTime;
 
         PhaseUpdate();    
     }
 
-    protected abstract void PhaseUpdate();
-
-    protected void Deduct(float time, DeductCallback cb)
+    protected virtual void PhaseUpdate()
     {
-        while(time > 0 && elapsedTime > time) {
-            elapsedTime -= time;
-            timesCalled++;
-            cb(timesCalled);
-        }   
+        if(phase >= phases.Length)
+            return;
+
+        PhaseInfo info = phases[phase];
+        Attack[] attacks = info.attacks;
+        for(int i = 0; i < attacks.Length; i++)
+            RunAttack(times[i], attacks[i]);
     }
 
     protected void Expect(float time)
@@ -58,31 +62,35 @@ public abstract class EnemyController : MonoBehaviour
 
     protected void Wait(float time)
     {
-        waiting = true;
-        waitTime = time;
-    }
-
-    protected void ResetCounter()
-    {
-        elapsedTime = 0;
-        phaseTime = 0;
-        timesCalled = 0;
+        if(time > 0) {
+            waiting = true;
+            waitTime = time;
+        }
     }
 
     protected void SetPhase(int phase)
     {
         this.phase = phase;
 
-        expectedPhaseTime = -1;
-        waitTime = -1;
-
         StepIntoPhase();
-        ResetCounter();
     }
 
     protected virtual void StepIntoPhase()
     {
+        expectedPhaseTime = -1;
+        waitTime = -1;
+        phaseTime = 0;
 
+        if(phase >= phases.Length)
+            return;
+
+        PhaseInfo info = phases[phase];
+        Wait(info.wait);
+        Expect(info.expected);
+
+        times = new AttackTime[info.attacks.Length];
+        for(int i = 0; i < times.Length; i++)
+            times[i] = new AttackTime();
     }
 
     public void SpawnBullet(float angle, float speed, Color color, float scale = 1F)
@@ -121,20 +129,118 @@ public abstract class EnemyController : MonoBehaviour
         SpawnBullet(force, pos, color, scale);
     }
 
-    private static float TrueAngle(Vector2 a, Vector2 b) {
+    protected void SpawnCircleBurst(float speed, float offset, float spread, Color color, float scale = 1F)
+    {
+        SpawnCircleBurst(speed, transform.position, offset, spread, color, scale);
+    }
+
+    protected void SpawnCircleBurst(float speed, Vector3 pos, float offset, float spread, Color color, float scale = 1F)
+    {
+        float angle = 0F;
+        float realSpread = Mathf.Deg2Rad * spread;
+
+        while(angle < TAU) {
+            float calcAngle = angle + offset;
+            Vector2 force = new Vector2(Mathf.Cos(calcAngle) * speed, Mathf.Sin(calcAngle) * speed);
+
+            SpawnBullet(force, pos, color, scale);
+
+            angle += realSpread;
+        }
+    }
+
+    protected static float TrueAngle(Vector2 a, Vector2 b)
+    {
         return Mathf.Deg2Rad * (Vector2.Angle(a, b) * Mathf.Sign(a.x * b.y - a.y * b.x) + 90F);
     }
 
-    [System.Serializable]
+    // ================== Generic Attacks ==================
+
+    protected void RunAttack(AttackTime time, Attack a)
+    {
+        switch(a.type) {
+            case AttackType.SPIN:
+                SpinAttack(time, a);
+                break;
+            case AttackType.TARGET_PLAYER:
+                TargetPlayerAttack(time, a);
+                break;
+            case AttackType.CIRCLE_BURST:
+                CircleBurstAttack(time, a);
+                break;
+            case AttackType.CUSTOM:
+                CustomAttack(time, a);
+                break;
+        }
+    }
+
+    protected void SpinAttack(AttackTime time, Attack a)
+    {
+        time.Deduct(a.delay, i => SpawnBullet((float)i * a.rotation + a.offset, a.bulletSpeed, a.color, a.size));
+    }
+
+    protected void TargetPlayerAttack(AttackTime time, Attack a)
+    {
+        time.Deduct(a.delay, i => SpawnPlayerTrackingBullet(a.bulletSpeed, a.color, a.size));
+    }
+
+    protected void CircleBurstAttack(AttackTime time, Attack a)
+    {
+        time.Deduct(a.delay, i => SpawnCircleBurst(a.bulletSpeed, (float) i * a.rotation + (i % 2) * a.offset, a.spread, a.color, a.size));
+    }
+
+    protected virtual void CustomAttack(AttackTime time, Attack a) { }
+
+    // ================== Serializable Stuff ==================
+
+    [Serializable]
     public class PhaseInfo
     {
         public float wait = 0F;
         public float expected = -1F;
+        public Attack[] attacks = new Attack[0];
+    }
+
+    [Serializable]
+    public class Attack
+    {
+        public String optionalName = "";
         public float delay = 1F;
         public float bulletSpeed = 100F;
         public float rotation = 900F;
+        public float offset = 0F;
+        public float spread = 0F;
         public float size = 1F;
         public Color color = Color.white;
+        public AttackType type = AttackType.SPIN;
+    }
+
+    [Serializable]
+    public enum AttackType
+    {
+        SPIN, TARGET_PLAYER, CIRCLE_BURST, CUSTOM
+
+    }
+
+    protected class AttackTime
+    {
+        protected float elapsedTime;
+        protected int timesCalled;
+
+        public void Step(float delta)
+        {
+            elapsedTime += delta;
+        }
+
+        public void Deduct(float time, DeductCallback cb)
+        {
+            while(time > 0 && elapsedTime > time) {
+                elapsedTime -= time;
+                timesCalled++;
+                cb(timesCalled);
+            }
+        }
+
     }
 
 }
