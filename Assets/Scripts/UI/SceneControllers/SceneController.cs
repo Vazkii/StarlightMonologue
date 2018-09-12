@@ -54,7 +54,6 @@ public abstract class SceneController : MonoBehaviour
             if(blackPanel2 != null)
                 SetAlpha(blackPanel2, (int)funcTicks - HALF_TICKS);
         }
-
     }
 
     private void SetAlpha(MaskableGraphic g, int a)
