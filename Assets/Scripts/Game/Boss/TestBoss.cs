@@ -3,13 +3,17 @@ using System.Collections;
 
 public class TestBoss : EnemyController
 {
-    public float delay = 2;
-    public float bulletSpeed = 120;
-    public float rotation = 300;
+    [Header("Descend")]
     public float descendSpeed = -0.5F;
     public float descendTarget = 3.5F;
 
-    private int phase = 0;
+    [Header("Phase Data")]
+    public PhaseInfo phase1;
+    public PhaseInfo phase2;
+    public PhaseInfo phase3;
+
+    // ======================================================================================================
+
     private float startPos;
 
     void Start()
@@ -17,13 +21,22 @@ public class TestBoss : EnemyController
         startPos = transform.localPosition.y;
     }
 
-    public override void Update()
+    protected override void StepIntoPhase()
     {
-        base.Update();
+        base.StepIntoPhase();
 
         switch(phase) {
+            case 1: Wait(phase1.wait); Expect(phase1.expected); break;
+            case 2: Wait(phase2.wait); Expect(phase2.expected); break;
+            case 3: Wait(phase3.wait); Expect(phase3.expected); break;
+        }
+    }
+
+    protected override void PhaseUpdate()
+    {
+        switch(phase) {
             case 0:
-                float y = startPos + ticksElapsed * descendSpeed;
+                float y = startPos + elapsedTime * descendSpeed;
                 if(y < descendTarget) {
                     y = descendTarget;
                     SetPhase(1);
@@ -32,24 +45,17 @@ public class TestBoss : EnemyController
                 transform.localPosition = new Vector3(0, y, 0);
                 break;
             case 1:
-                Deduct(4.8F, i => SetPhase(2));
+                Deduct(phase1.delay, i => SpawnBullet((float) i * phase1.rotation, phase1.bulletSpeed, phase1.color, phase1.size));
                 break;
             case 2:
-                Deduct(delay, i => SpawnBullet((float)i * rotation, bulletSpeed, Color.white));
-                if(ticksSinceReset > 5)
-                    SetPhase(3);
+                Deduct(phase2.delay, i => SpawnBullet((float)i * phase2.rotation, phase2.bulletSpeed, phase2.color, phase2.size));
                 break;
             case 3:
-                Deduct(delay / 2.5F, i => SpawnBullet((float)i * rotation, bulletSpeed * 1.5F, Color.red, 0.5F));
+                Deduct(phase3.delay, i => SpawnPlayerTrackingBullet(phase3.bulletSpeed, phase3.color, phase3.size));
                 break;
         }
     }
 
-    void SetPhase(int phase)
-    {
-        this.phase = phase;
-        ResetCounter();
-    }
 
 
 }
