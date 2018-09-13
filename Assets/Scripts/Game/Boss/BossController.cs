@@ -28,9 +28,13 @@ public class BossController : MonoBehaviour
     protected float totalTime;
     protected float phaseTime;
     protected AttackTime[] times;
+    protected SpriteRenderer sprite;
+    protected ParticleSystem particles;
 
     public virtual void Start()
     {
+        sprite = GetComponent<SpriteRenderer>();
+        particles = GetComponentInChildren<ParticleSystem>();
         SetPhase(startingPhase);
     }
 

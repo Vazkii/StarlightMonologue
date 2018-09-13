@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Boss1 : BossController
+public class Boss2 : BossController
 {
     [Header("Descend")]
     public float descendSpeed = -0.5F;
@@ -40,8 +40,8 @@ public class Boss1 : BossController
             particles.Stop();
         }
 
-        if(!didCutin && totalTime > 8) {
-            scene.AnimateCutin("You are Fragile");
+        if(!didCutin && totalTime > 14) {
+            scene.AnimateCutin("Shutdown, Shutdown");
             didCutin = true;
         }
     }
