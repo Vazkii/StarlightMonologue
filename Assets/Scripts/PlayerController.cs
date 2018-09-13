@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-
 public class PlayerController : MonoBehaviour {
 
     [Header("Links")]
@@ -90,7 +89,7 @@ public class PlayerController : MonoBehaviour {
             if(health < 0) {
                 allowInput = false;
                 scene.OnPlayerDeath();
-            } else
+            } else {
                 hearts[health].color = new Color32(0, 0, 0, 0);
                 sprite.color = new Color32(190, 190, 190, 255);
                 iframes = iframeTime;
