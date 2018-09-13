@@ -83,7 +83,6 @@ public class PlayerController : MonoBehaviour {
         Transform target = collision.collider.transform;
         if(target.tag == "KillThing" && allowInput) {
             health--;
-            hearts[health].color = new Color32(0, 0, 0, 0);
 
             audioSource.PlayOneShot(damageSound);
             Destroy(collision.collider.gameObject);
@@ -91,7 +90,8 @@ public class PlayerController : MonoBehaviour {
             if(health < 0) {
                 allowInput = false;
                 scene.OnPlayerDeath();
-            } else {
+            } else
+                hearts[health].color = new Color32(0, 0, 0, 0);
                 sprite.color = new Color32(190, 190, 190, 255);
                 iframes = iframeTime;
                 gameObject.layer = 11; // Invulnerable
