@@ -170,6 +170,20 @@ public class BossController : MonoBehaviour
         }
     }
 
+    protected void SpawnDirectionalBurst(float speed, float start, float length, Color color, float scale = 1F)
+    {
+        SpawnDirectionalBurst(speed, transform.position, start, length, color, scale);
+    }
+
+    protected void SpawnDirectionalBurst(float speed, Vector3 pos, float start, float length, Color color, float scale = 1F)
+    {
+        float angle = UnityEngine.Random.Range(start, start + length);
+
+           Vector2 force = new Vector2(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed);
+
+            SpawnBullet(force, pos, color, scale);
+    }
+
     protected static float TrueAngle(Vector2 a, Vector2 b)
     {
         return Mathf.Deg2Rad * (Vector2.Angle(a, b) * Mathf.Sign(a.x * b.y - a.y * b.x) + 90F);
@@ -188,6 +202,9 @@ public class BossController : MonoBehaviour
                 break;
             case AttackType.CIRCLE_BURST:
                 CircleBurstAttack(time, a);
+                break;
+            case AttackType.DIRECTIONAL_BURST:
+                DirectionalBurstAttack(time, a);
                 break;
             case AttackType.CUSTOM:
                 CustomAttack(time, a);
@@ -208,6 +225,11 @@ public class BossController : MonoBehaviour
     protected void CircleBurstAttack(AttackTime time, Attack a)
     {
         time.Deduct(a.delay, i => SpawnCircleBurst(a.bulletSpeed, (float) i * a.rotation + (i % 2) * a.offset, a.spread, a.color, a.size));
+    }
+
+    protected void DirectionalBurstAttack(AttackTime time, Attack a)
+    {
+        time.Deduct(a.delay, i => SpawnDirectionalBurst(a.bulletSpeed, (a.offset + (float) i * a.rotation * a.delay) * Mathf.Deg2Rad, a.spread * Mathf.Deg2Rad, a.color, a.size));
     }
 
     protected virtual void CustomAttack(AttackTime time, Attack a) { }
@@ -239,7 +261,7 @@ public class BossController : MonoBehaviour
     [Serializable]
     public enum AttackType
     {
-        SPIN, TARGET_PLAYER, CIRCLE_BURST, CUSTOM
+        SPIN, TARGET_PLAYER, CIRCLE_BURST, DIRECTIONAL_BURST, CUSTOM
 
     }
 
