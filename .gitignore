@@ -3,6 +3,8 @@
 # =============== #
 Temp/
 Library/
+Packages/manifest.json
+ProjectSettings/PresetManager.asset
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
@@ -15,6 +17,7 @@ obj/
 *.pidb
 *.suo
 /*.sln
+.vs/
 *.user
 *.unityproj
 *.booproj
