@@ -17,7 +17,7 @@ public class CreditsScene : SceneController
     {
         base.Start();
 
-        float distance = creditsScrollTarget - transform.localPosition.y;
+        float distance = creditsScrollTarget - creditsPane.localPosition.y;
         creditsScrollSpeed = (distance / totalTime);
     }
 
@@ -25,10 +25,8 @@ public class CreditsScene : SceneController
     {
         if(!animDown)
             animatingCredits = true;
-        else {
+        else
             riko.sprite = targetSprite;
-            Debug.Log("Finished!");
-        }
     }
 
     public override void Update()
