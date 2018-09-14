@@ -150,6 +150,9 @@ public class BossController : MonoBehaviour
 
     protected void SpawnCircleBurst(float speed, Vector3 pos, float offset, float spread, Color color, float scale = 1F)
     {
+        if(spread == 0)
+            return;
+
         float angle = 0F;
         float realSpread = Mathf.Deg2Rad * spread;
 
