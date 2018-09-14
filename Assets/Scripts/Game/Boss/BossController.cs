@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,11 +32,16 @@ public class BossController : MonoBehaviour
     protected SpriteRenderer sprite;
     protected ParticleSystem particles;
 
+    protected List<GameObject> targets = new List<GameObject>();
+
     public virtual void Start()
     {
         sprite = GetComponent<SpriteRenderer>();
         particles = GetComponentInChildren<ParticleSystem>();
         SetPhase(startingPhase);
+        targets.Add(gameObject);
+
+        UnityEngine.Random.InitState(0);
     }
 
     void Update()
@@ -114,14 +120,10 @@ public class BossController : MonoBehaviour
         Expect(info.expected);
     }
 
-    public void SpawnBullet(float angle, float speed, Color color, float scale = 1F)
+    public GameObject SpawnBullet(float angle, float speed, Vector3 pos, Color color, float scale = 1F)
     {
         Vector2 force = new Vector2(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed);
-        SpawnBullet(force, transform.position, color, scale);
-    }
 
-    public void SpawnBullet(Vector2 force, Vector3 pos, Color color, float scale = 1F)
-    {
         GameObject obj = Instantiate(bulletPrefab, pos, Quaternion.identity);
         obj.transform.parent = playfield;
         obj.transform.localScale = Vector3.one * scale;
@@ -131,11 +133,8 @@ public class BossController : MonoBehaviour
 
         SpriteRenderer sprite = obj.GetComponent<SpriteRenderer>();
         sprite.color = color;
-    }
 
-    public void SpawnPlayerTrackingBullet(float speed, Color color, float scale = 1F)
-    {
-        SpawnPlayerTrackingBullet(speed, transform.position, color, scale);
+        return obj;
     }
 
     public void SpawnPlayerTrackingBullet(float speed, Vector3 pos, Color color, float scale = 1F)
@@ -146,13 +145,7 @@ public class BossController : MonoBehaviour
     public void SpawnBulletTowardsPoint(float speed, Vector3 pos, Vector3 target, Color color, float scale = 1F)
     {
         float angle = TrueAngle(pos, target);
-        Vector2 force = new Vector2(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed);
-        SpawnBullet(force, pos, color, scale);
-    }
-
-    protected void SpawnCircleBurst(float speed, float offset, float spread, Color color, float scale = 1F)
-    {
-        SpawnCircleBurst(speed, transform.position, offset, spread, color, scale);
+        SpawnBullet(angle, speed, pos, color, scale);
     }
 
     protected void SpawnCircleBurst(float speed, Vector3 pos, float offset, float spread, Color color, float scale = 1F)
@@ -161,27 +154,17 @@ public class BossController : MonoBehaviour
         float realSpread = Mathf.Deg2Rad * spread;
 
         while(angle < TAU) {
-            float calcAngle = angle + offset;
-            Vector2 force = new Vector2(Mathf.Cos(calcAngle) * speed, Mathf.Sin(calcAngle) * speed);
-
-            SpawnBullet(force, pos, color, scale);
+            float offAngle = angle + offset;
+            SpawnBullet(offAngle, speed, pos, color, scale);
 
             angle += realSpread;
         }
     }
 
-    protected void SpawnDirectionalBurst(float speed, float start, float length, Color color, float scale = 1F)
-    {
-        SpawnDirectionalBurst(speed, transform.position, start, length, color, scale);
-    }
-
     protected void SpawnDirectionalBurst(float speed, Vector3 pos, float start, float length, Color color, float scale = 1F)
     {
-        float angle = UnityEngine.Random.Range(start, start + length);
-
-           Vector2 force = new Vector2(Mathf.Cos(angle) * speed, Mathf.Sin(angle) * speed);
-
-            SpawnBullet(force, pos, color, scale);
+        float angle = UnityEngine.Random.Range(start, start + length);    
+        SpawnBullet(angle, speed, pos, color, scale);
     }
 
     protected static float TrueAngle(Vector2 a, Vector2 b)
@@ -214,22 +197,22 @@ public class BossController : MonoBehaviour
 
     protected void SpinAttack(AttackTime time, Attack a)
     {
-        time.Deduct(a.delay, i => SpawnBullet((float)i * a.rotation + a.offset, a.bulletSpeed, a.color, a.size));
+        time.Deduct(a.delay, i => SpawnBullet((float)i * a.rotation + a.offset, a.bulletSpeed, targets[a.start].transform.position, a.color, a.size));
     }
 
     protected void TargetPlayerAttack(AttackTime time, Attack a)
     {
-        time.Deduct(a.delay, i => SpawnPlayerTrackingBullet(a.bulletSpeed, a.color, a.size));
+        time.Deduct(a.delay, i => SpawnPlayerTrackingBullet(a.bulletSpeed, targets[a.start].transform.position, a.color, a.size));
     }
 
     protected void CircleBurstAttack(AttackTime time, Attack a)
     {
-        time.Deduct(a.delay, i => SpawnCircleBurst(a.bulletSpeed, (float) i * a.rotation + (i % 2) * a.offset, a.spread, a.color, a.size));
+        time.Deduct(a.delay, i => SpawnCircleBurst(a.bulletSpeed, targets[a.start].transform.position, (float) i * a.rotation + (i % 2) * a.offset, a.spread, a.color, a.size));
     }
 
     protected void DirectionalBurstAttack(AttackTime time, Attack a)
     {
-        time.Deduct(a.delay, i => SpawnDirectionalBurst(a.bulletSpeed, (a.offset + (float) i * a.rotation * a.delay) * Mathf.Deg2Rad, a.spread * Mathf.Deg2Rad, a.color, a.size));
+        time.Deduct(a.delay, i => SpawnDirectionalBurst(a.bulletSpeed, targets[a.start].transform.position, (a.offset + (float) i * a.rotation * a.delay) * Mathf.Deg2Rad, a.spread * Mathf.Deg2Rad, a.color, a.size));
     }
 
     protected virtual void CustomAttack(AttackTime time, Attack a) { }
@@ -254,6 +237,7 @@ public class BossController : MonoBehaviour
         public float offset = 0F;
         public float spread = 0F;
         public float size = 1F;
+        public int start = 0;
         public Color color = Color.white;
         public AttackType type = AttackType.SPIN;
     }

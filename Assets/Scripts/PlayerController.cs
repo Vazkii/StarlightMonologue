@@ -80,7 +80,7 @@ public class PlayerController : MonoBehaviour {
     private void OnCollisionEnter2D(Collision2D collision)
     {
         Transform target = collision.collider.transform;
-        if(target.tag == "KillThing" && allowInput) {
+        if(target.tag == "KillThing" && allowInput && gameObject.layer == 10) {
             health--;
 
             audioSource.PlayOneShot(damageSound);
