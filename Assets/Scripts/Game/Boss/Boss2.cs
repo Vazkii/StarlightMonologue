@@ -40,8 +40,8 @@ public class Boss2 : BossController
             particles.Stop();
         }
 
-        if(!didCutin && totalTime > 14) {
-            scene.AnimateCutin("Shutdown, Shutdown");
+        if(!didCutin && totalTime > 70) { 
+            scene.AnimateCutin("Shut Down");
             didCutin = true;
         }
     }
