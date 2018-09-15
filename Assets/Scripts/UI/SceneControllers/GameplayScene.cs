@@ -14,7 +14,7 @@ public class GameplayScene : SceneController
     public int nextScene;
 
     private float elapsedTime;
-    private bool done;
+    protected bool done;
 
     private float cutinAnimTime;
     private float cutinPauseTime;
