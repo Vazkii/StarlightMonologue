@@ -33,10 +33,19 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Update () {
+
+        float delta = Time.deltaTime;
+        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
+        float a = hitbox.color.a;
+        const float hitboxFadeSpeed = 4F;
+        if(shift && allowInput)
+            a = Mathf.Min(1, a + hitboxFadeSpeed * delta);
+        else a = Mathf.Max(0, a - hitboxFadeSpeed * delta);
+
         if(!allowInput)
             return;
 
-        float delta = Time.deltaTime;
         if(iframes > 0) {
             iframes -= delta;
 
@@ -46,10 +55,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
-        const float hitboxFadeSpeed = 4F;
-
         float motionX = 0, motionY = 0;
-        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift); 
         float speed = (shift ? moveSpeedShift : moveSpeed) * delta;
 
         if(Input.GetKey(KeyCode.UpArrow))
@@ -68,11 +74,6 @@ public class PlayerController : MonoBehaviour {
 
         transform.position += motion;
         ClampPosition();
-
-        float a = hitbox.color.a;
-        if(shift)
-            a = Mathf.Min(1, a + hitboxFadeSpeed * Time.deltaTime);
-        else a = Mathf.Max(0, a - hitboxFadeSpeed * Time.deltaTime);
 
         hitbox.color = new Color(1F, 1F, 1F, a);
     }
