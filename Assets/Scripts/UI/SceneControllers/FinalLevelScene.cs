@@ -44,7 +44,7 @@ public class FinalLevelScene : GameplayScene
 
         if(!skipped) {
             skipped = true;
-            audioSource.time = songTime - 10;
+            audioSource.time = songTime - 3;
         }
 
         if(internalTime > startTime) {
