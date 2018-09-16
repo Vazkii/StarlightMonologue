@@ -8,7 +8,6 @@ public class FinalLevelScene : GameplayScene
     [Header("Final Level Settings")]
     public AudioClip finalSong;
     public ParticleSystem particles;
-    public Text nowPlayingText;
     public int startTime;
 
     [Header("Sparkles")]
@@ -54,8 +53,6 @@ public class FinalLevelScene : GameplayScene
 
                 playerController.allowInput = false;
                 travel = playerController.transform.localPosition;
-
-                nowPlayingText.text = nowPlayingText.text.Replace("Daisuki Dattara Daijoubu", "Kimi no Kokoro wa Kagayaiteru Kai (Instrumental)");
             }
 
             float animTime = internalTime - startTime;
